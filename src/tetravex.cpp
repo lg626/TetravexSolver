@@ -1,5 +1,5 @@
 #include "toplevel.h"
-//Author @Y6329127
+//Author @Luiza Georgieva
 
 #define WIDTH 36
 #define TILE_LEN 4
@@ -96,16 +96,16 @@ void toplevel(hls::stream<uint32> &input, hls::stream<uint32> &output) {
 /* Parallelised for loop trying different tiles as a root tile. */
 master:for(currtile = 0; currtile < 2;currtile++)
 {
-	uint3 x;						//tile coordinates
+	uint3 x;				//tile coordinates
 	uint3 y;
-	uint6 parent;					//parent tile id
+	uint6 parent;				//parent tile id
 
-	uint6 stack[36];				//stack containing the last pushed tile
-	uint6 puzzle[6][6];				//puzzle solution matrix
+	uint6 stack[36];			//stack containing the last pushed tile
+	uint6 puzzle[6][6];			//puzzle solution matrix
 	uint6 positions[36][2];			//x and y coordinates of each tile in the pizzle
-	uint6 tries[36][2];				//history -> last tried index for right and bottom neightbours
+	uint6 tries[36][2];			//history -> last tried index for right and bottom neightbours
 	uint2 rotations[36];			//rotations of the currently used tiles
-	uint1 status[36];				//availability status
+	uint1 status[36];			//availability status
 
 	int stacktop 		= 1;		//initialise stack top (or in this case the next empty position)
 	int nexttoexpand 	= 0;		//next tile to expand (look for neighbours to)
@@ -113,28 +113,28 @@ master:for(currtile = 0; currtile < 2;currtile++)
 	bool stopsearch 	= false;	//flag for stopping the search
 	bool foundsolution 	= false;	//flag for output ready
 
-	int neighbourtile;				//neighbour tile
-	int child_x;					//child coordinates
+	int neighbourtile;			//neighbour tile
+	int child_x;				//child coordinates
 	int child_y;
 
-	bool bottomedge;				//check if at bottom edge
-	bool rightedge;					//check if at right edge
+	bool bottomedge;			//check if at bottom edge
+	bool rightedge;				//check if at right edge
 
 	if(solutions == 0) break;		//if requested solutions is 0 stop
 
-	for(int i = 0; i < size; i++)	//clear puzzle
+	for(int i = 0; i < size; i++)		//clear puzzle
 		for(int j = 0; j < size; j++)
 			puzzle[i][j] = 0;
 
-	stopsearch = false;				//reset flag
+	stopsearch = false;			//reset flag
 
-	puzzle[0][0] 	= currtile + 1; //put root tile
+	puzzle[0][0] 	= currtile + 1; 	//put root tile
 	positions[0][0] = 0;			//store coordinates
 	positions[0][1] = 0;
 
 	stack[0] = currtile;			//push it on the stack
-	nexttoexpand = 0;				//reset next to expand pointer
-	stacktop = 1;					//set stack top
+	nexttoexpand = 0;			//reset next to expand pointer
+	stacktop = 1;				//set stack top
 
 	for(int i = 0; i < numtiles; i++)
 	{
@@ -174,7 +174,7 @@ master:for(currtile = 0; currtile < 2;currtile++)
 
 		matched 		= false;
 
-		if(puzzle[child_x][child_y] == UNASSIGNED)				//check if child tile is unassigned
+		if(puzzle[child_x][child_y] == UNASSIGNED)					//check if child tile is unassigned
 		{
 			if(rightedge) fcolour = inputdata[parent][(4 + BOTTOM - rotations[parent]) % 4];	//get the bottom value of the up tile
 			else
@@ -235,34 +235,34 @@ void popAndDelete(int tile, uint6* stack, uint1* status, uint2* rotations, uint6
 
 	poploopi: for (int i = stacktop-1; (i >= 0 && !stop); i--)	 //pop all items before tile including the tile itself
 	{
-		int nx	= positions[i][0];								 //tile coordinates in puzzle
+		int nx	= positions[i][0];				 //tile coordinates in puzzle
 		int ny	= positions[i][1];
 
 		if(stack[i] == tile)
 		{
-			stacktop = i;										//update index to top of the stack
+			stacktop = i;					//update index to top of the stack
 			stop = true;
 		}
 
-		status[stack[i]] = AVAILABLE;							//make tile available
-		puzzle[nx][ny] = UNASSIGNED;							//delete from puzzle
+		status[stack[i]] = AVAILABLE;				//make tile available
+		puzzle[nx][ny] = UNASSIGNED;				//delete from puzzle
 		tries[stack[i]][DOWNCHILD] = 0;
-		tries[stack[i]][RIGHTCHILD] = 0;						//delete the history of tried children
-		rotations[stack[i]] = 0;								//remove number of rotations
-		stack[i] = 0;											//pop off the stack
+		tries[stack[i]][RIGHTCHILD] = 0;			//delete the history of tried children
+		rotations[stack[i]] = 0;				//remove number of rotations
+		stack[i] = 0;						//pop off the stack
 
-		if(nx == 0 && ny == 0)									//if root tile
+		if(nx == 0 && ny == 0)					//if root tile
 		{
-			if(tile < size*size) tile = tile + 1;				//put next tile as root tile
+			if(tile < size*size) tile = tile + 1;		//put next tile as root tile
 			else tile = 0;
-			status[tile] = UNAVAILABLE;							//make the current tile unavailable
-			puzzle[0][0] = tile + 1;							//put new root tile in the puzzle
-			stack[0] = tile;									//and in the stack
+			status[tile] = UNAVAILABLE;			//make the current tile unavailable
+			puzzle[0][0] = tile + 1;			//put new root tile in the puzzle
+			stack[0] = tile;				//and in the stack
 
-			positions[0][0] = 0;								//update positions
+			positions[0][0] = 0;				//update positions
 			positions[0][1] = 0;
 
-			stacktop = 1;										//update top of the stack
+			stacktop = 1;					//update top of the stack
 		} // root tile is popped off -> assign root tile
 	}
 
@@ -303,35 +303,35 @@ void match(int x, int y, int parent,int firstcolour,int secondcolour, int side, 
 
 	if(comptile !=0) 												// if hashmap contains tiles with requested description
 	{
-		if(tries[parent][child] != 0 && comptile !=0) 				//if there is history of tries
+		if(tries[parent][child] != 0 && comptile !=0) 		//if there is history of tries
 		{
-			comptile  = tries[parent][child] - 1; 					//decrement pointer
+			comptile  = tries[parent][child] - 1; 		//decrement pointer
 		}
 
 		matchloopi: for(int i = comptile; i > 0; i--)
 		{
 			tile = colourmap[firstcolour][secondcolour][i][TILE];	//get tile index in the inputdata
 
-			if(status[tile] == AVAILABLE)							//if flag indicates the tile is available
+			if(status[tile] == AVAILABLE)				//if flag indicates the tile is available
 			{
 				int leftedge;
 				int orientation = colourmap[firstcolour][secondcolour][i][ORIENTATION];
 
-				stack[stacktop] = tile;								//put tile on the stack
+				stack[stacktop] = tile;				//put tile on the stack
 				rotate(tile,firstcolour,orientation,side,rotations);//rotate specifying the tile to rotate, the value and side to be matched
 
-				puzzle[x][y] = tile + 1;							//put tile in puzzle
-				positions[stacktop][0] = x;							//record the positions of the tile
+				puzzle[x][y] = tile + 1;			//put tile in puzzle
+				positions[stacktop][0] = x;			//record the positions of the tile
 				positions[stacktop][1] = y;
 
-				status[tile] = UNAVAILABLE;							//mark as used
-			    tries[parent][child] = i;							//store the index of currently used child tilE
+				status[tile] = UNAVAILABLE;			//mark as used
+			    tries[parent][child] = i;				//store the index of currently used child tilE
 
-			    leftedge = puzzle[x][0] - 1;						//find tile at the left edge on the same row
-			    tries[leftedge][DOWNCHILD] = 0;						//when something new is added delete history of bottom row
+			    leftedge = puzzle[x][0] - 1;			//find tile at the left edge on the same row
+			    tries[leftedge][DOWNCHILD] = 0;			//when something new is added delete history of bottom row
 				stacktop += 1;										//keep track of top of the stack
 
-				if(stacktop == numtiles)							//if stack is full signal that a solution has been found
+				if(stacktop == numtiles)			//if stack is full signal that a solution has been found
 				{
 #ifdef debug
 					printf("\n------Solution-----------------------\n");
